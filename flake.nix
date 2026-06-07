@@ -1,0 +1,104 @@
+{
+  description = "Prebuilt static ffmpeg (BtbN/FFmpeg-Builds) for x86_64/aarch64 linux";
+
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+
+  outputs = { self, nixpkgs }:
+    let
+      # BtbN "latest" rolling build. Run ./update.sh to refresh version+hashes.
+      version = "master-latest";
+
+      # variant -> system -> { arch, hash }. Managed by update.sh.
+      hashes = {
+        gpl = {
+          x86_64-linux = "sha256-uNIpOob+/YDpqWHAVXRxsACB9U6D4FNRDGcbitvZ5+4=";
+          aarch64-linux = "sha256-s79lhYTuMqI9tAutExotUVP2gxLz1jOVmeDl6mVEpjY=";
+        };
+        lgpl = {
+          x86_64-linux = "sha256-cdL4AWOJbBKDtTxjJQkDrZVvYoWIRYclMbpor5wax4g=";
+          aarch64-linux = "sha256-Uabzfy+SApH6+sHlz4T7dhZoW4+hD1JaHb0BbUEcWrs=";
+        };
+      };
+
+      arches = {
+        x86_64-linux = "linux64";
+        aarch64-linux = "linuxarm64";
+      };
+
+      systems = builtins.attrNames arches;
+      forAllSystems = f: nixpkgs.lib.genAttrs systems (system: f system);
+
+      # variant: "gpl" or "lgpl"
+      ffmpegFor = pkgs: variant:
+        let
+          system = pkgs.stdenv.hostPlatform.system;
+          arch = arches.${system};
+          license =
+            if variant == "gpl" then pkgs.lib.licenses.gpl3Plus
+            else pkgs.lib.licenses.lgpl21Plus;
+        in
+        pkgs.stdenv.mkDerivation {
+          pname = "ffmpeg-btbn-${variant}";
+          inherit version;
+
+          src = pkgs.fetchurl {
+            url = "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-${version}-${arch}-${variant}.tar.xz";
+            hash = hashes.${variant}.${system};
+          };
+
+          nativeBuildInputs = [ pkgs.autoPatchelfHook ];
+
+          # The non-shared build statically links ffmpeg's own libs, so only the
+          # system runtime deps need patching. SDL2/X11 are for ffplay.
+          buildInputs = [
+            pkgs.stdenv.cc.cc.lib # libstdc++ / libgcc_s
+            pkgs.zlib
+            pkgs.SDL2
+            pkgs.libx11
+            pkgs.libxext
+            pkgs.libxv
+          ];
+
+          installPhase = ''
+            runHook preInstall
+            mkdir -p $out/share
+            cp -r bin $out/bin
+            cp -r man $out/share/man || true
+            install -Dm644 LICENSE.txt $out/share/doc/ffmpeg-btbn/LICENSE.txt || true
+            runHook postInstall
+          '';
+
+          meta = with pkgs.lib; {
+            description = "Prebuilt static ffmpeg from BtbN/FFmpeg-Builds (${variant})";
+            homepage = "https://github.com/BtbN/FFmpeg-Builds";
+            inherit license;
+            platforms = systems;
+            mainProgram = "ffmpeg";
+          };
+        };
+    in
+    {
+      # Use in another flake: nixpkgs overlays = [ ffmpeg-builds.overlays.default ];
+      # then reference pkgs.ffmpeg-btbn / pkgs.ffmpeg-btbn-lgpl.
+      overlays.default = final: prev: {
+        ffmpeg-btbn = ffmpegFor final "gpl";
+        ffmpeg-btbn-lgpl = ffmpegFor final "lgpl";
+      };
+
+      packages = forAllSystems (system:
+        let pkgs = nixpkgs.legacyPackages.${system};
+        in rec {
+          ffmpeg = ffmpegFor pkgs "gpl";
+          ffmpeg-lgpl = ffmpegFor pkgs "lgpl";
+          default = ffmpeg;
+        });
+
+      apps = forAllSystems (system: rec {
+        ffmpeg = {
+          type = "app";
+          program = "${self.packages.${system}.ffmpeg}/bin/ffmpeg";
+        };
+        default = ffmpeg;
+      });
+    };
+}
