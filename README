@@ -1,0 +1,29 @@
+ffmpeg-builds.nix
+=================
+
+Prebuilt static ffmpeg for x86_64-linux / aarch64-linux, as a flake.
+
+
+Use from your system configuration
+----------------------------------
+flake.nix:
+
+    {
+      inputs.ffmpeg-bin.url = "github:aca/ffmpeg-builds.nix";
+
+      outputs = { nixpkgs, ffmpeg-bin, ... }: {
+        nixosConfigurations.myhost = nixpkgs.lib.nixosSystem {
+          modules = [
+            { nixpkgs.overlays = [ ffmpeg-bin.overlays.default ]; }
+            ./configuration.nix
+          ];
+        };
+      };
+    }
+
+configuration.nix:
+
+    environment.systemPackages = [ pkgs.ffmpeg-bin ];        # gpl (default)
+    # environment.systemPackages = [ pkgs.ffmpeg-bin-lgpl ]; # lgpl variant
+
+Provides bin/ffmpeg, bin/ffprobe, bin/ffplay.

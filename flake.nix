@@ -1,11 +1,11 @@
 {
-  description = "Prebuilt static ffmpeg (BtbN/FFmpeg-Builds) for x86_64/aarch64 linux";
+  description = "Prebuilt static ffmpeg binaries for x86_64/aarch64 linux";
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
   outputs = { self, nixpkgs }:
     let
-      # BtbN "latest" rolling build. Run ./update.sh to refresh version+hashes.
+      # Upstream "latest" rolling build. Run ./update.sh to refresh version+hashes.
       version = "master-latest";
 
       # variant -> system -> { arch, hash }. Managed by update.sh.
@@ -38,7 +38,7 @@
             else pkgs.lib.licenses.lgpl21Plus;
         in
         pkgs.stdenv.mkDerivation {
-          pname = "ffmpeg-btbn-${variant}";
+          pname = "ffmpeg-bin-${variant}";
           inherit version;
 
           src = pkgs.fetchurl {
@@ -64,12 +64,12 @@
             mkdir -p $out/share
             cp -r bin $out/bin
             cp -r man $out/share/man || true
-            install -Dm644 LICENSE.txt $out/share/doc/ffmpeg-btbn/LICENSE.txt || true
+            install -Dm644 LICENSE.txt $out/share/doc/ffmpeg-bin/LICENSE.txt || true
             runHook postInstall
           '';
 
           meta = with pkgs.lib; {
-            description = "Prebuilt static ffmpeg from BtbN/FFmpeg-Builds (${variant})";
+            description = "Prebuilt static ffmpeg binary (${variant})";
             homepage = "https://github.com/BtbN/FFmpeg-Builds";
             inherit license;
             platforms = systems;
@@ -79,10 +79,10 @@
     in
     {
       # Use in another flake: nixpkgs overlays = [ ffmpeg-builds.overlays.default ];
-      # then reference pkgs.ffmpeg-btbn / pkgs.ffmpeg-btbn-lgpl.
+      # then reference pkgs.ffmpeg-bin / pkgs.ffmpeg-bin-lgpl.
       overlays.default = final: prev: {
-        ffmpeg-btbn = ffmpegFor final "gpl";
-        ffmpeg-btbn-lgpl = ffmpegFor final "lgpl";
+        ffmpeg-bin = ffmpegFor final "gpl";
+        ffmpeg-bin-lgpl = ffmpegFor final "lgpl";
       };
 
       packages = forAllSystems (system:

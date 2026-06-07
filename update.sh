@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Refresh the BtbN/FFmpeg-Builds "latest" hashes in flake.nix.
+# Refresh the upstream "latest" hashes in flake.nix.
 # Re-prefetches every variant/arch and rewrites the sha256-... lines in place.
 set -euo pipefail
 
