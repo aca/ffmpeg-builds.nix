@@ -11,12 +11,12 @@
       # variant -> system -> { arch, hash }. Managed by update.sh.
       hashes = {
         gpl = {
-          x86_64-linux = "sha256-uNIpOob+/YDpqWHAVXRxsACB9U6D4FNRDGcbitvZ5+4=";
-          aarch64-linux = "sha256-s79lhYTuMqI9tAutExotUVP2gxLz1jOVmeDl6mVEpjY=";
+          x86_64-linux = "sha256-NpUy16vbb+5NMIPZbofuftmBwR8Ziv1Q0fyBWGgTER0=";
+          aarch64-linux = "sha256-X332QYvxw4q7BWMJB6+l9pnODr3lWzAvPepSkKTaE4o=";
         };
         lgpl = {
-          x86_64-linux = "sha256-cdL4AWOJbBKDtTxjJQkDrZVvYoWIRYclMbpor5wax4g=";
-          aarch64-linux = "sha256-Uabzfy+SApH6+sHlz4T7dhZoW4+hD1JaHb0BbUEcWrs=";
+          x86_64-linux = "sha256-AAghSnmhgBr95u8wEsUpv+LSxaDr/F9+Nu292b9/Ooc=";
+          aarch64-linux = "sha256-69xXRSg7BMQ1L1j4B6nKQpJBvutAMSvkz8HDved5Zsk=";
         };
       };
 
