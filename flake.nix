@@ -5,18 +5,20 @@
 
   outputs = { self, nixpkgs }:
     let
-      # Upstream "latest" rolling build. Run ./update.sh to refresh version+hashes.
-      version = "master-latest";
+      # Pinned to an immutable dated autobuild release (NOT the rolling "latest"
+      # tag, whose tarball changes and breaks the hash). Run ./update.sh to bump.
+      release = "autobuild-2026-06-08-14-24";
+      rev = "ffmpeg-N-124881-g6028720d70"; # filename stem for this release
 
-      # variant -> system -> { arch, hash }. Managed by update.sh.
+      # variant -> system -> hash. Managed by update.sh.
       hashes = {
         gpl = {
-          x86_64-linux = "sha256-uNIpOob+/YDpqWHAVXRxsACB9U6D4FNRDGcbitvZ5+4=";
-          aarch64-linux = "sha256-s79lhYTuMqI9tAutExotUVP2gxLz1jOVmeDl6mVEpjY=";
+          x86_64-linux = "sha256-QEojUVNDyMVop0yjknCHk4fQ7JK59SpE1Bbs99mWEjA=";
+          aarch64-linux = "sha256-5ybCgfOK1p8LIQovTwXTmGNbpmAW+UAZuEqTaFrQL30=";
         };
         lgpl = {
-          x86_64-linux = "sha256-cdL4AWOJbBKDtTxjJQkDrZVvYoWIRYclMbpor5wax4g=";
-          aarch64-linux = "sha256-Uabzfy+SApH6+sHlz4T7dhZoW4+hD1JaHb0BbUEcWrs=";
+          x86_64-linux = "sha256-QgTY3qDMBLwIjU36vKTowrI4ZoMxhtsp031ZbW0jCHU=";
+          aarch64-linux = "sha256-sI1kL8+tb0G0Qv5/U3h/12nFKnn//2CKWRpv4zuGvDU=";
         };
       };
 
@@ -39,10 +41,10 @@
         in
         pkgs.stdenv.mkDerivation {
           pname = "ffmpeg-bin-${variant}";
-          inherit version;
+          version = release;
 
           src = pkgs.fetchurl {
-            url = "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-${version}-${arch}-${variant}.tar.xz";
+            url = "https://github.com/BtbN/FFmpeg-Builds/releases/download/${release}/${rev}-${arch}-${variant}.tar.xz";
             hash = hashes.${variant}.${system};
           };
 
@@ -78,7 +80,7 @@
         };
     in
     {
-      # Use in another flake: nixpkgs overlays = [ ffmpeg-builds.overlays.default ];
+      # Use in another flake: nixpkgs overlays = [ ffmpeg-bin.overlays.default ];
       # then reference pkgs.ffmpeg-bin / pkgs.ffmpeg-bin-lgpl.
       overlays.default = final: prev: {
         ffmpeg-bin = ffmpegFor final "gpl";
