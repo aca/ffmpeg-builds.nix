@@ -7,18 +7,18 @@
     let
       # Pinned to an immutable dated autobuild release (NOT the rolling "latest"
       # tag, whose tarball changes and breaks the hash). Run ./update.sh to bump.
-      release = "autobuild-2026-10-11-13-04";
-      rev = "ffmpeg-N-127367-gb5902e69c7"; # filename stem for this release
+      release = "autobuild-2026-10-18-13-01";
+      rev = "ffmpeg-N-127651-gb60ab6c9a4"; # filename stem for this release
 
       # variant -> system -> hash. Managed by update.sh.
       hashes = {
         gpl = {
-          x86_64-linux = "sha256-KKz6h3tDlEoyA7WhrTLV2yPDG9mcNOMfaRElHkrq64Q=";
-          aarch64-linux = "sha256-PHPQzpCV6+CykuNDpqCldRbGiXOXh/TKpViySlKSTe0=";
+          x86_64-linux = "sha256-pfKu0ZjvqO9MEtkRL0LnzvvfEdztG1modQPKaJvFInc=";
+          aarch64-linux = "sha256-PRzNtFsBY16EBNo5hp86DHpTW55jRwQ5vD5nfPEv4mY=";
         };
         lgpl = {
-          x86_64-linux = "sha256-cfF4jKIKjU01k4WELhmPQSHq3kQfoTTY9VO70XpAUHo=";
-          aarch64-linux = "sha256-+8mhmSstmJ9Lqai1c/TjrxdzlIQXoEbPFfeSmgRZ1QE=";
+          x86_64-linux = "sha256-RzL7/rXC6eHUhbItKYP60P0g2o4eUVPoS2+/pirtH6E=";
+          aarch64-linux = "sha256-LnYkyx/BBta448yjq+70H5eGSBo5wuMdj8+ZaESmr1A=";
         };
       };
 
