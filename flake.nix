@@ -2,8 +2,10 @@
   description = "Prebuilt static ffmpeg binaries for x86_64/aarch64 linux";
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+  inputs.nixbot.url = "github:Mic92/nixbot";
+  inputs.nixbot.inputs.nixpkgs.follows = "nixpkgs";
 
-  outputs = { self, nixpkgs }:
+  outputs = { self, nixpkgs, nixbot }:
     let
       # Pinned to an immutable dated autobuild release (NOT the rolling "latest"
       # tag, whose tarball changes and breaks the hash). Run ./update.sh to bump.
@@ -94,6 +96,40 @@
           ffmpeg-lgpl = ffmpegFor pkgs "lgpl";
           default = ffmpeg;
         });
+
+      # nixbot (oci-jkor-a1) scheduled effect: ./update.sh, commit, push over ssh.
+      herculesCI = { ... }:
+        let
+          pkgs = nixpkgs.legacyPackages.aarch64-linux;
+          inherit (nixbot.lib.effects { inherit pkgs; }) mkEffect;
+          knownHosts = pkgs.writeText "known_hosts" ''
+            github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl
+          '';
+        in
+        {
+          onSchedule.update-hashes = {
+            when = { dayOfWeek = [ "Mon" ]; hour = 6; minute = 0; }; # UTC
+            outputs.effects.update = mkEffect {
+              secretsMap.ssh = "ssh";
+              inputs = with pkgs; [ git openssh curl python3 nix gawk gnused ];
+              effectScript = ''
+                writeSSHKey ssh
+                export GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=${knownHosts}"
+                export NIX_CONFIG="experimental-features = nix-command"
+                git clone git@github.com:aca/ffmpeg-builds.nix.git repo
+                cd repo
+                bash ./update.sh
+                if git diff --quiet flake.nix; then
+                  echo "No changes."
+                else
+                  git -c user.name=nixbot -c user.email=nixbot@oci-jkor-a1 \
+                    commit -m "chore: update ffmpeg hashes ($(date -u +%Y-%m-%d))" flake.nix
+                  git push
+                fi
+              '';
+            };
+          };
+        };
 
       apps = forAllSystems (system: rec {
         ffmpeg = {
