@@ -108,7 +108,7 @@
         in
         {
           onSchedule.update-hashes = {
-            when = { dayOfWeek = [ "Mon" ]; hour = 6; minute = 0; }; # UTC
+            when = { hour = 11; minute = 50; }; # UTC, TEMP: trigger test
             outputs.effects.update = mkEffect {
               secretsMap.ssh = "ssh";
               inputs = with pkgs; [ git openssh curl python3 nix gawk gnused ];
