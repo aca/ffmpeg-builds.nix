@@ -102,9 +102,6 @@
         let
           pkgs = nixpkgs.legacyPackages.aarch64-linux;
           inherit (nixbot.lib.effects { inherit pkgs; }) mkEffect;
-          knownHosts = pkgs.writeText "known_hosts" ''
-            github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl
-          '';
         in
         {
           onSchedule.update-hashes = {
@@ -114,7 +111,6 @@
               inputs = with pkgs; [ git openssh curl python3 nix gawk gnused ];
               effectScript = ''
                 writeSSHKey ssh
-                export GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=${knownHosts}"
                 export NIX_CONFIG="experimental-features = nix-command"
                 git clone git@github.com:aca/ffmpeg-builds.nix.git repo
                 cd repo
